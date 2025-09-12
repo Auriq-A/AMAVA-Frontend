@@ -214,18 +214,24 @@ const CheckOnAmz: React.FC = () => {
 
       const rows: any[] = [];
       merged.forEach((item: any) => {
-        if (item.amazon_data && item.amazon_data.length > 0) {
+        if (Array.isArray(item.amazon_data) && item.amazon_data.length > 0) {
           item.amazon_data.forEach((ad: any) => {
             rows.push({
               ...item,
-              ...ad,
+              productASIN: ad.productASIN,
+              status: ad.status,
             });
           });
         } else {
-          rows.push(item);
+          rows.push({
+            ...item,
+            productASIN: "",
+            status: "",
+          });
         }
       });
 
+      // Remove amazon_data field from each row
       rows.forEach((row) => delete row.amazon_data);
 
       const ws = XLSX.utils.json_to_sheet(rows);
@@ -239,10 +245,10 @@ const CheckOnAmz: React.FC = () => {
     }
   };
 
-  const flatProducts: { upc: string; product: ProductResult }[] = checkedData
-    ? Object.entries(checkedData.results).flatMap(([upc, products]) =>
-        products.map((product) => ({ upc, product }))
-      )
+  const flatProducts: { Search_key: string; product: ProductResult }[] = checkedData
+    ? Object.entries(checkedData.results).flatMap(([Search_key, products]) =>
+      products.map((product) => ({ Search_key, product }))
+    )
     : [];
 
   return (
@@ -285,10 +291,10 @@ const CheckOnAmz: React.FC = () => {
           <div className={styles.responseBox}>
             <h2 className={styles.heading}>Checked Products</h2>
             <div className={styles.productsGrid}>
-              {flatProducts.slice(0, 10).map(({ upc, product }, idx) => (
-                <div key={upc + idx} className={styles.productCard}>
+              {flatProducts.slice(0, 10).map(({ Search_key, product }, idx) => (
+                <div key={Search_key + idx} className={styles.productCard}>
                   <div className={styles.productLabel}>
-                    UPC: <span className={styles.productMono}>{upc}</span>
+                    Search key: <span className={styles.productMono}>{Search_key}</span>
                   </div>
                   <div>
                     ASIN: <span className={styles.productMono}>{product.productASIN}</span>
@@ -332,16 +338,16 @@ const CheckOnAmz: React.FC = () => {
                     <table className={styles.modalTable}>
                       <thead>
                         <tr>
-                          <th>UPC</th>
+                          <th>Search Key</th>
                           <th>ASIN</th>
                           <th>Status</th>
                           <th>Amazon Link</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {flatProducts.map(({ upc, product }, idx) => (
-                          <tr key={upc + idx}>
-                            <td className={styles.productMono}>{upc}</td>
+                        {flatProducts.map(({ Search_key, product }, idx) => (
+                          <tr key={Search_key + idx}>
+                            <td className={styles.productMono}>{Search_key}</td>
                             <td className={styles.productMono}>{product.productASIN}</td>
                             <td>{product.status}</td>
                             <td>
@@ -371,7 +377,7 @@ const CheckOnAmz: React.FC = () => {
 
             {checkedData.skipped && checkedData.skipped.length > 0 && (
               <div className={styles.skippedBox}>
-                <h3 className={styles.modalTitle}>Skipped UPCs</h3>
+                <h3 className={styles.modalTitle}>Skipped Search keys</h3>
                 <div className={styles.skippedList}>
                   {checkedData.skipped.map((item, idx) => (
                     <span key={item.productUPC + idx} className={styles.skippedItem}>
@@ -425,5 +431,6 @@ const CheckOnAmz: React.FC = () => {
     </div>
   );
 };
+
 
 export default CheckOnAmz;
