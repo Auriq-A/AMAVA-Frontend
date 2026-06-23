@@ -54,7 +54,7 @@ export default function Dashboard() {
       <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:'var(--gap)'}}>
         {[
           {label:"Today's revenue", value: loading?'—': '$'+totalRevenue.toFixed(2), sub:sales.length+' orders', delta:'↑ 12.4%', dColor:'var(--success-500)'},
-          {label:'Units sold', value:loading?'—':String(sales.reduce((s,o)=>s+(1),0)), sub:'FBA fulfilled', delta:'↑ 8%', dColor:'var(--success-500)'},
+          {label:'Units sold', value:loading?'—':String(sales.length), sub:'FBA fulfilled', delta:'↑ 8%', dColor:'var(--success-500)'},
           {label:'Products scanned', value:'1,204', sub:'3 suppliers crawled', delta:'↑ 320', dColor:accent},
           {label:'Win rate', value:'27.6%', sub:'ungated & profitable', delta:'↓ 1.2%', dColor:'var(--danger-500)'},
         ].map((k,i) => (
