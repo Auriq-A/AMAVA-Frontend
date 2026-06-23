@@ -1,0 +1,16 @@
+@import './styles/auriq.css';
+
+/* DatePicker field override to match AURIQ inputs */
+.auriq-dp {
+  height: 44px;
+  padding: 0 14px;
+  border-radius: 10px;
+  background: var(--surface-inset);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 14px;
+  outline: none;
+  box-sizing: border-box;
+  cursor: pointer;
+}

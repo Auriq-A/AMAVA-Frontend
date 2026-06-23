@@ -1,0 +1,56 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+*,*::before,*::after{box-sizing:border-box;}
+body{margin:0;font-family:var(--font-body);background:var(--bg-base);color:var(--text-primary);-webkit-font-smoothing:antialiased;}
+:root{
+  --font-display:'Manrope',sans-serif;
+  --font-body:'Inter',sans-serif;
+  --font-mono:'JetBrains Mono',monospace;
+  --transition-all:all .18s cubic-bezier(.4,0,.2,1);
+  --accent:#00D4FF;
+  --accent-rgb:0,212,255;
+  --gap:20px;
+}
+[data-theme="dark"]{
+  --bg-base:#04121F;--bg-sunken:#020D17;--bg-elevated:#0A1E30;
+  --surface-card:rgba(14,37,64,.9);--surface-inset:#071626;
+  --surface-glass:rgba(10,30,50,.8);
+  --border-subtle:rgba(255,255,255,.07);--border-strong:rgba(255,255,255,.15);
+  --text-primary:#E8F4FF;--text-secondary:#A0BDD4;--text-muted:#5A7A94;
+  --text-accent:var(--accent);--border-accent:rgba(var(--accent-rgb),.45);
+  --accent-soft:rgba(var(--accent-rgb),.13);
+  --success-500:#2BD9A0;--danger-500:#FF5A5A;--warning-500:#F5A623;
+  --on-accent:#04121F;
+  --grad-brand:linear-gradient(135deg,var(--accent),#0080CC);
+  --glow-sm:0 0 18px rgba(var(--accent-rgb),.35);
+  --shadow-md:0 4px 24px rgba(0,0,0,.4);--shadow-sm:0 2px 8px rgba(0,0,0,.3);
+  --grad-aurora:radial-gradient(ellipse 80% 60% at 50% -20%,rgba(var(--accent-rgb),.06) 0%,transparent 70%);
+}
+[data-theme="light"]{
+  --bg-base:#EEF3F8;--bg-sunken:#E2EAF2;--bg-elevated:#FFFFFF;
+  --surface-card:rgba(255,255,255,.92);--surface-inset:#E4ECF4;
+  --surface-glass:rgba(238,243,248,.88);
+  --border-subtle:rgba(0,0,0,.07);--border-strong:rgba(0,0,0,.14);
+  --text-primary:#0A1628;--text-secondary:#3D5A73;--text-muted:#7A9AB5;
+  --text-accent:var(--accent);--border-accent:rgba(var(--accent-rgb),.4);
+  --accent-soft:rgba(var(--accent-rgb),.12);
+  --success-500:#1AA87A;--danger-500:#D94040;--warning-500:#C47B10;
+  --on-accent:#04121F;
+  --grad-brand:linear-gradient(135deg,var(--accent),#0080CC);
+  --glow-sm:0 0 14px rgba(var(--accent-rgb),.2);
+  --shadow-md:0 4px 20px rgba(0,0,0,.1);--shadow-sm:0 2px 6px rgba(0,0,0,.07);
+  --grad-aurora:radial-gradient(ellipse 80% 60% at 50% -20%,rgba(var(--accent-rgb),.04) 0%,transparent 70%);
+}
+::-webkit-scrollbar{width:8px;height:8px;}
+::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:99px;border:2px solid transparent;background-clip:content-box;}
+::-webkit-scrollbar-track{background:transparent;}
+@keyframes auriq-rise{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+@keyframes auriq-spin{to{transform:rotate(360deg);}}
+@keyframes auriq-pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.35;transform:scale(.82);}}
+.auriq-page{animation:auriq-rise .3s ease;}
+/* datepicker overrides */
+.react-datepicker{background:var(--surface-card)!important;border:1px solid var(--border-subtle)!important;border-radius:12px!important;font-family:var(--font-body)!important;box-shadow:var(--shadow-md)!important;}
+.react-datepicker__header{background:var(--bg-sunken)!important;border-bottom:1px solid var(--border-subtle)!important;border-radius:12px 12px 0 0!important;}
+.react-datepicker__current-month,.react-datepicker__day-name,.react-datepicker__day{color:var(--text-primary)!important;}
+.react-datepicker__day:hover{background:var(--accent-soft)!important;border-radius:6px!important;}
+.react-datepicker__day--selected{background:var(--accent)!important;color:var(--on-accent)!important;border-radius:6px!important;}
