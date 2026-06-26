@@ -11,6 +11,9 @@ import styles from "./pages/Home.module.css"; // Use your CSS module
 import SalesTable from "./pages/Sales";
 import SalesMetricsPage from "./pages/SalesPerformance";
 import FBAProfitCalculatorPage from "./pages/ReveneCalculator";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
+import ConnectAccounts from "./pages/ConnectAccounts";
 function AppContent() {
   const { darkMode } = useTheme();
 
@@ -28,6 +31,10 @@ function AppContent() {
             <Route path="/sales" element={<SalesTable />} />
             <Route path="/sales-performance" element={<SalesMetricsPage />} />
             <Route path="/fba-profit-calculator" element={<FBAProfitCalculatorPage />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/connect-accounts" element={<ConnectAccounts />} />
+        
             {/* Add more routes as needed */}
           </Routes>
         </main>
