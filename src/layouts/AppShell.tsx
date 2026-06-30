@@ -1,6 +1,7 @@
 import React from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import { getEmail, clearAuth } from '../lib/auth';
 
 const NAV = [
   { group: 'WORKSPACE', items: [{ path:'/', label:'Dashboard', icon:'dashboard' }] },
@@ -78,6 +79,8 @@ export default function AppShell() {
   const navigate = useNavigate();
   const { theme, toggleTheme, accent } = useApp();
   const info = PAGE_INFO[location.pathname] || { title:'AMAVA', subtitle:'' };
+  const email = getEmail();
+  const onAccount = () => { if (email) clearAuth(); navigate('/login'); };
 
   const navBtn = (active: boolean): React.CSSProperties => ({
     display:'flex', alignItems:'center', gap:12, width:'100%',
@@ -115,12 +118,14 @@ export default function AppShell() {
           ))}
         </nav>
         <div style={s.userCard}>
-          <div style={s.avatar}>MC</div>
+          <div style={s.avatar}>{email ? email.slice(0,2).toUpperCase() : 'AA'}</div>
           <div style={{minWidth:0,flex:1}}>
-            <div style={{fontSize:13.5,fontWeight:600,color:'var(--text-primary)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>Maya Chen</div>
-            <div style={{fontSize:11.5,color:'var(--text-muted)'}}>Pro workspace</div>
+            <div style={{fontSize:13.5,fontWeight:600,color:'var(--text-primary)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{email || 'Not signed in'}</div>
+            <button onClick={onAccount} style={{background:'none',border:'none',padding:0,cursor:'pointer',fontSize:11.5,color:'var(--text-muted)',fontFamily:'var(--font-body)'}}>
+              {email ? 'Log out' : 'Sign in'}
+            </button>
           </div>
-          <div style={{width:8,height:8,borderRadius:'50%',background:'var(--success-500)',flexShrink:0}}/>
+          <div style={{width:8,height:8,borderRadius:'50%',background:email?'var(--success-500)':'var(--text-muted)',flexShrink:0}}/>
         </div>
       </aside>
 

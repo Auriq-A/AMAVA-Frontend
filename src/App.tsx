@@ -12,12 +12,16 @@ import Chat from './pages/Chat';
 import ScreenshotListener from './pages/Progress';
 import ConnectAccounts from './pages/ConnectAccounts';
 import Appearance from './pages/Appearance';
+import Login from './pages/Login';
+import Register from './pages/Register';
 
 export default function App() {
   return (
     <AppProvider>
       <Router>
         <Routes>
+          <Route path='/login' element={<Login />} />
+          <Route path='/register' element={<Register />} />
           <Route element={<AppShell />}>
             <Route path='/' element={<Dashboard />} />
             <Route path='/search' element={<Home />} />

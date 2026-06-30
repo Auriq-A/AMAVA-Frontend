@@ -1,5 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
+
+const API_BASE = 'http://localhost:51483';
+// Frontend supplier ids -> canonical supplier names the backend/vault expects.
+const SUP_NAME: Record<string,string> = { avasam:'avasam', lots888:'888lots', frontier:'frontier' };
+const JSON_HEADERS = { 'Content-Type':'application/json', 'ngrok-skip-browser-warning':'true' };
 const card: React.CSSProperties = { background:'var(--surface-card)', border:'1px solid var(--border-subtle)', borderRadius:16, backdropFilter:'blur(12px)' };
 const iStyle: React.CSSProperties = { width:'100%',height:44,padding:'0 14px',borderRadius:10,background:'var(--surface-inset)',border:'1px solid var(--border-subtle)',color:'var(--text-primary)',fontFamily:'var(--font-body)',fontSize:14,outline:'none',boxSizing:'border-box' as const };
 const lStyle: React.CSSProperties = { display:'block',fontSize:13,fontWeight:500,color:'var(--text-secondary)',marginBottom:7 };
@@ -22,13 +27,77 @@ export default function ConnectAccounts() {
   const [supStatus,setSupStatus]=useState<Record<string,Status>>({avasam:'idle',lots888:'idle',frontier:'idle'});
   const [supFields,setSupFields]=useState<Record<string,{f1:string;f2:string}>>({avasam:{f1:'',f2:''},lots888:{f1:'',f2:''},frontier:{f1:'',f2:''}});
 
-  const saveSpapi = () => {
+  // Load saved connection statuses on mount so badges/fields reflect the vault.
+  useEffect(() => {
+    fetch(`${API_BASE}/api/credentials/spapi`, { headers: JSON_HEADERS })
+      .then(r => r.json())
+      .then(d => {
+        if (d?.connected) {
+          setSpapiStatus('connected');
+          if (d.seller_id) setSellerId(d.seller_id);
+          if (d.marketplace) setMarketplace(d.marketplace);
+        }
+      }).catch(() => {});
+    fetch(`${API_BASE}/api/credentials/suppliers`, { headers: JSON_HEADERS })
+      .then(r => r.json())
+      .then(d => {
+        if (d?.connected) {
+          setSupStatus(s => {
+            const next = { ...s };
+            for (const id in SUP_NAME) if (d.connected[SUP_NAME[id]]) next[id] = 'connected';
+            return next;
+          });
+        }
+      }).catch(() => {});
+  }, []);
+
+  const saveSpapi = async () => {
+    if (!clientId.trim() || !clientSecret.trim() || !refreshToken.trim()) {
+      alert('LWA Client ID, Client Secret and Refresh Token are required.');
+      return;
+    }
     setSpapiStatus('saving');
-    setTimeout(()=>setSpapiStatus('connected'),1400);
+    try {
+      const r = await fetch(`${API_BASE}/api/credentials/spapi`, {
+        method: 'POST', headers: JSON_HEADERS,
+        body: JSON.stringify({ client_id: clientId, client_secret: clientSecret, refresh_token: refreshToken, seller_id: sellerId, marketplace }),
+      });
+      const d = await r.json();
+      if (r.ok && d.status === 'success') setSpapiStatus('connected');
+      else { setSpapiStatus('idle'); alert(d.message || 'Failed to save credentials.'); }
+    } catch {
+      setSpapiStatus('idle');
+      alert(`Could not reach the backend at ${API_BASE}. Is it running?`);
+    }
   };
-  const disconnectSpapi = () => { setSpapiStatus('idle'); setSellerId(''); setClientId(''); setClientSecret(''); setRefreshToken(''); };
-  const connectSup = (id:string) => () => { setSupStatus(s=>({...s,[id]:'saving'})); setTimeout(()=>setSupStatus(s=>({...s,[id]:'connected'})),1400); };
-  const disconnectSup = (id:string) => () => setSupStatus(s=>({...s,[id]:'idle'}));
+
+  const disconnectSpapi = async () => {
+    try { await fetch(`${API_BASE}/api/credentials/spapi`, { method: 'DELETE', headers: JSON_HEADERS }); } catch {}
+    setSpapiStatus('idle'); setSellerId(''); setClientId(''); setClientSecret(''); setRefreshToken('');
+  };
+
+  const connectSup = (id:string) => async () => {
+    const f = supFields[id];
+    setSupStatus(s => ({ ...s, [id]: 'saving' }));
+    try {
+      const r = await fetch(`${API_BASE}/api/credentials/supplier`, {
+        method: 'POST', headers: JSON_HEADERS,
+        body: JSON.stringify({ supplier: SUP_NAME[id] || id, username: f.f1, password: f.f2 }),
+      });
+      const d = await r.json();
+      if (r.ok && d.status === 'success') setSupStatus(s => ({ ...s, [id]: 'connected' }));
+      else { setSupStatus(s => ({ ...s, [id]: 'idle' })); alert(d.message || 'Failed to save.'); }
+    } catch {
+      setSupStatus(s => ({ ...s, [id]: 'idle' }));
+      alert(`Could not reach the backend at ${API_BASE}.`);
+    }
+  };
+
+  const disconnectSup = (id:string) => async () => {
+    try { await fetch(`${API_BASE}/api/credentials/supplier/${SUP_NAME[id] || id}`, { method: 'DELETE', headers: JSON_HEADERS }); } catch {}
+    setSupStatus(s => ({ ...s, [id]: 'idle' }));
+  };
+
   const setSupF = (id:string,f:'f1'|'f2') => (e:React.ChangeEvent<HTMLInputElement>) => setSupFields(s=>({...s,[id]:{...s[id],[f]:e.target.value}}));
 
   const statusBadge = (st:Status) => ({
@@ -42,7 +111,7 @@ export default function ConnectAccounts() {
   const ghostBtn: React.CSSProperties = { height:44,padding:'0 18px',borderRadius:12,background:'transparent',color:'var(--text-secondary)',border:'1px solid var(--border-subtle)',fontFamily:'var(--font-body)',fontSize:14,cursor:'pointer',transition:'var(--transition-all)' };
 
   const SUPPLIERS = [
-    { id:'avasam', name:'Avasam', mark:'AV', bg:'linear-gradient(135deg,#1B3D7A,#2874C5)', desc:'UK dropshipping marketplace · 200k+ products', f1l:'Email / Username', f1p:'you@avasam.com', f2l:'API Key', f2t:'password' as const },
+    { id:'avasam', name:'Avasam', mark:'AV', bg:'linear-gradient(135deg,#1B3D7A,#2874C5)', desc:'UK dropshipping marketplace · login required · set up via Teach Mode', f1l:'Email / Username', f1p:'you@avasam.com', f2l:'Password', f2t:'password' as const },
     { id:'lots888', name:'888lots', mark:'88', bg:'linear-gradient(135deg,#4A1254,#8B2FC9)', desc:'Wholesale lots and surplus goods platform', f1l:'Email / Username', f1p:'you@888lots.com', f2l:'Password', f2t:'password' as const },
     { id:'frontier', name:'Frontier Wholesale', mark:'FW', bg:'linear-gradient(135deg,#1A4A2A,#2D8A50)', desc:'US distributor · public catalog · no login required', f1l:'Account email (optional)', f1p:'you@company.com', f2l:'API key (optional)', f2t:'password' as const },
   ];
