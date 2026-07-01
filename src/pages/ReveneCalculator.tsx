@@ -18,7 +18,7 @@ export default function FBAProfitCalculatorPage() {
   const handleCalculate = async () => {
     setLoading(true); setError(''); setResult(null);
     try {
-      const res=await fetch('https://amava-backend-production.up.railway.app/fba-profit-calculator',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({asin,cost:parseFloat(cost)})});
+      const res=await fetch('https://api-amava.up.railway.app/fba-profit-calculator',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({asin,cost:parseFloat(cost)})});
       if(!res.ok){const e=await res.json();throw new Error(e.error||'Failed to calculate.');}
       setResult(await res.json());
     } catch(err:any){setError(err.message||'Something went wrong.');}
@@ -28,7 +28,7 @@ export default function FBAProfitCalculatorPage() {
   const CalculateAllCheckedProduct = async () => {
     setAllLoading(true); setAllResults([]); setError('');
     try {
-      const res=await fetch('https://amava-backend-production.up.railway.app/revcalall',{method:'POST'});
+      const res=await fetch('https://api-amava.up.railway.app/revcalall',{method:'POST'});
       if(!res.ok){const e=await res.json();throw new Error(e.error||'Failed.');}
       const data=await res.json();
       if(data.status==='success') setAllResults(data.data||[]);

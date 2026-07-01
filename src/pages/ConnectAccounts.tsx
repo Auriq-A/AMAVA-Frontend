@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 
-const API_BASE = 'https://amava-backend-production.up.railway.app';
+const API_BASE = 'https://api-amava.up.railway.app';
 // Frontend supplier ids -> canonical supplier names the backend/vault expects.
 const SUP_NAME: Record<string,string> = { avasam:'avasam', lots888:'888lots', frontier:'frontier' };
 const JSON_HEADERS = { 'Content-Type':'application/json', 'ngrok-skip-browser-warning':'true' };

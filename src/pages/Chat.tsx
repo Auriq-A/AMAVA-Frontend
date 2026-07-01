@@ -26,11 +26,11 @@ export default function Chat() {
     const userId='us',sessionId='st',appName='AMAVAGENT',promptText=input.trim();
     setInput('');
     try {
-      let response=await fetch('https://amava-backend-production.up.railway.app/run',{method:'POST',headers:{'ngrok-skip-browser-warning':'true','Content-Type':'application/json'},body:JSON.stringify({appName,userId,sessionId,newMessage:{role:'user',parts:[{text:promptText}]}})});
+      let response=await fetch('https://api-amava.up.railway.app/run',{method:'POST',headers:{'ngrok-skip-browser-warning':'true','Content-Type':'application/json'},body:JSON.stringify({appName,userId,sessionId,newMessage:{role:'user',parts:[{text:promptText}]}})});
       const text=await response.clone().text();
       if(text.includes('"detail":"Session not found"')){
-        await fetch('https://amava-backend-production.up.railway.app/apps/'+appName+'/users/'+userId+'/sessions/'+sessionId,{method:'POST',headers:{'ngrok-skip-browser-warning':'true','Content-Type':'application/json'},body:JSON.stringify({state:{key1:'value1',key2:42}})});
-        response=await fetch('https://amava-backend-production.up.railway.app/run',{method:'POST',headers:{'ngrok-skip-browser-warning':'true','Content-Type':'application/json'},body:JSON.stringify({appName,userId,sessionId,newMessage:{role:'user',parts:[{text:promptText}]}})});
+        await fetch('https://api-amava.up.railway.app/apps/'+appName+'/users/'+userId+'/sessions/'+sessionId,{method:'POST',headers:{'ngrok-skip-browser-warning':'true','Content-Type':'application/json'},body:JSON.stringify({state:{key1:'value1',key2:42}})});
+        response=await fetch('https://api-amava.up.railway.app/run',{method:'POST',headers:{'ngrok-skip-browser-warning':'true','Content-Type':'application/json'},body:JSON.stringify({appName,userId,sessionId,newMessage:{role:'user',parts:[{text:promptText}]}})});
       }
       const retryText=await response.clone().text();
       let main='No main response found.';

@@ -13,7 +13,7 @@ export default function ScrapedView() {
   const skipKeys = ['image','websiteUrl'];
 
   useEffect(() => {
-    fetch('https://amava-backend-production.up.railway.app/api/get_scraped_data',{method:'GET',headers:{'ngrok-skip-browser-warning':'true'}})
+    fetch('https://api-amava.up.railway.app/api/get_scraped_data',{method:'GET',headers:{'ngrok-skip-browser-warning':'true'}})
       .then(r=>r.json())
       .then(data=>{
         if(data.status==='success'){

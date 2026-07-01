@@ -1,7 +1,7 @@
 function RevCalAllButton() {
     const handleClick = async () => {
         try {
-            const res = await fetch("https://amava-backend-production.up.railway.app/revcalall", {
+            const res = await fetch("https://api-amava.up.railway.app/revcalall", {
                 method: "POST"
             });
             const data = await res.json();
