@@ -11,7 +11,7 @@ export default function SalesTable() {
   const [error,setError]=useState<string|null>(null);
 
   useEffect(()=>{
-    axios.get('http://localhost:51483/todays-sales')
+    axios.get('https://amava-backend-production.up.railway.app/todays-sales')
       .then(r=>{setSales(r.data.sales_data||[]);setLoading(false);})
       .catch(err=>{setError(err?.response?.data?.message||'Something went wrong.');setLoading(false);});
   },[]);

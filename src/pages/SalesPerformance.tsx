@@ -21,7 +21,7 @@ export default function SalesMetricsPage() {
   const fetchMetrics = async (from:Date,to:Date) => {
     setLoading(true);
     try {
-      const res=await axios.get('http://localhost:51483/sales-metrics',{params:{start_date:from.toISOString().split('T')[0],end_date:to.toISOString().split('T')[0]}});
+      const res=await axios.get('https://amava-backend-production.up.railway.app/sales-metrics',{params:{start_date:from.toISOString().split('T')[0],end_date:to.toISOString().split('T')[0]}});
       setMetrics(res.data.data||[]);
     } catch { setError('Failed to fetch sales metrics.'); }
     finally { setLoading(false); }

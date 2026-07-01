@@ -3,7 +3,7 @@
 // (global wrapper) so every existing page call is authenticated without edits.
 import axios from 'axios';
 
-export const API_BASE = 'http://localhost:51483';
+export const API_BASE = 'https://amava-backend-production.up.railway.app';
 const KEY = 'amava_api_key';
 const EMAIL = 'amava_email';
 

@@ -26,7 +26,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axios.get('http://localhost:51483/todays-sales')
+    axios.get('https://amava-backend-production.up.railway.app/todays-sales')
       .then(r => { setSales(r.data.sales_data||[]); setLoading(false); })
       .catch(() => setLoading(false));
   }, []);

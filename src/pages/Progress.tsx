@@ -11,7 +11,7 @@ export default function ScreenshotListener() {
     let interval: ReturnType<typeof setInterval>;
     const fetchScreenshot = async () => {
       try {
-        const res=await fetch('http://localhost:51483/get-screenshot',{method:'GET',headers:{'ngrok-skip-browser-warning':'true'}});
+        const res=await fetch('https://amava-backend-production.up.railway.app/get-screenshot',{method:'GET',headers:{'ngrok-skip-browser-warning':'true'}});
         if(res.ok){
           const blob=await res.blob();
           if(blob.type.startsWith('image/')){
