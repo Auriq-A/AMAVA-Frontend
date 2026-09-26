@@ -82,7 +82,7 @@ export default function CheckOnAmz() {
     const fetchCheckedData = async () => {
       setLoading(true); setError(null); setCheckedData(null); setAgentResponse(null);
       try {
-        const response=await fetch('https://api-amava.up.railway.app/checkeddata',{method:'GET',headers:{'ngrok-skip-browser-warning':'true','Content-Type':'application/json'}});
+        const response=await fetch('https://api-amava.up.railway.app/check-ungated',{method:'GET',headers:{'ngrok-skip-browser-warning':'true','Content-Type':'application/json'}});
         if(!response.ok) throw new Error('Failed to fetch');
         const data=await response.json();
         if(!data.checked_data?.results||Object.keys(data.checked_data.results).length===0) await runAgentForAmazonCheck();
