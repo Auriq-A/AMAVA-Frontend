@@ -34,82 +34,358 @@ export default function CheckOnAmz() {
   function extractMainResponse(json:any):string { for(const e of json){const p=e?.content?.parts?.[0];if(p?.text)return p.text;} return 'No main response found.'; }
 
   const handleCheckOnAmzClick = async () => {
-    setLoading(true); setError(null);
-    try {
-      const res=await fetch('https://api-amava.up.railway.app/api/get_scraped_data',{method:'GET',headers:{'ngrok-skip-browser-warning':'true'}});
-      const data=await res.json();
-      if(data.status==='success'){
-        const parsed=JSON.parse(data.raw_string).data;
-        if(parsed?.length>0){setSearchKeys(Object.keys(parsed[0]));setShowSearchKeyModal(true);}
-        else setError('No scraped data found.');
-      } else setError('Failed to load scraped data.');
-    } catch { setError('Failed to fetch scraped data.'); }
-    finally { setLoading(false); }
-  };
+  setLoading(true);
+  setError(null);
 
-  const handleSendSearchKey = async () => {
-    if(!selectedKey) return; setSendingSearchKey(true);
-    try {
-      const res=await fetch('https://api-amava.up.railway.app/api/get_scraped_data',{method:'GET',headers:{'ngrok-skip-browser-warning':'true'}});
-      const data=await res.json(); let unitList:any[]=[];
-      if(data.status==='success'){const parsed=JSON.parse(data.raw_string).data;unitList=parsed.map((i:any)=>i[selectedKey]).filter(Boolean);}
-      await fetch('https://api-amava.up.railway.app/search-key',{method:'POST',headers:{'ngrok-skip-browser-warning':'true','Content-Type':'application/json'},body:JSON.stringify({search_key:selectedKey,values:unitList})});
-      setShowSearchKeyModal(false); setSelectedKey(''); setError('Search key sent! Checking on Amazon…');
-      await runAgentForAmazonCheck();
-    } catch { setError('Failed to send search key.'); }
-    finally { setSendingSearchKey(false); }
-  };
-
-  const runAgentForAmazonCheck = async () => {
-    setLoading(true); setError(null); setAgentResponse(null);
-    const userId='us',sessionId='st',appName='AMAVAGENT';
-    const promptText='Hello from Server scraping is done wholesaler\'s website now start checking on Amazon';
-    try {
-      let response=await fetch('https://api-amava.up.railway.app/run',{method:'POST',headers:{'ngrok-skip-browser-warning':'true','Content-Type':'application/json'},body:JSON.stringify({appName,userId,sessionId,newMessage:{role:'user',parts:[{text:promptText}]}})});
-      const text=await response.text();
-      if(text.includes('"detail":"Session not found"')){
-        await fetch(`https://api-amava.up.railway.app/apps/${appName}/users/${userId}/sessions/${sessionId}`,{method:'POST',headers:{'ngrok-skip-browser-warning':'true','Content-Type':'application/json'},body:JSON.stringify({state:{key1:'value1',key2:42}})});
-        response=await fetch('https://api-amava.up.railway.app/run',{method:'POST',headers:{'ngrok-skip-browser-warning':'true','Content-Type':'application/json'},body:JSON.stringify({appName,userId,sessionId,newMessage:{role:'user',parts:[{text:promptText}]}})});
+  try {
+    const res = await fetch(
+      'https://api-amava.up.railway.app/api/get_scraped_data',
+      {
+        method: 'GET',
+        headers: {
+          'ngrok-skip-browser-warning': 'true',
+        },
       }
-      const retryText=await response.text(); let main='No main response found.';
-      try{const json=JSON.parse(retryText);main=extractMainResponse(json);}catch{main=retryText;}
-      setAgentResponse(main); setError('Started checking on Amazon. We will notify you after its done!');
-    } catch(err) { setError(`Failed to contact agent. ${err}`); }
-    finally { setLoading(false); }
-  };
+    );
 
-  useEffect(() => {
-    const fetchCheckedData = async () => {
-      setLoading(true); setError(null); setCheckedData(null); setAgentResponse(null);
-      try {
-        const response=await fetch('https://api-amava.up.railway.app/check-ungated',{method:'GET',headers:{'ngrok-skip-browser-warning':'true','Content-Type':'application/json'}});
-        if(!response.ok) throw new Error('Failed to fetch');
-        const data=await response.json();
-        if(!data.checked_data?.results||Object.keys(data.checked_data.results).length===0) await runAgentForAmazonCheck();
-        else setCheckedData(data.checked_data);
-      } catch { await runAgentForAmazonCheck(); }
-      finally { setLoading(false); }
-    };
-    fetchCheckedData();
-    const interval=setInterval(fetchCheckedData,600000);
-    return ()=>clearInterval(interval);
-  },[]);
+    if (!res.ok) {
+      throw new Error('Failed to fetch scraped data');
+    }
 
-  const handleDownload = async () => {
-    setDownloading(true);
+    const data = await res.json();
+
+    if (data.status === 'success') {
+      const parsed = JSON.parse(data.raw_string).data;
+
+      if (parsed?.length > 0) {
+        setSearchKeys(Object.keys(parsed[0]));
+        setShowSearchKeyModal(true);
+      } else {
+        setError('No scraped data found.');
+      }
+    } else {
+      setError('Failed to load scraped data.');
+    }
+  } catch (err) {
+    console.error('handleCheckOnAmzClick error:', err);
+    setError('Failed to fetch scraped data.');
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+const handleSendSearchKey = async () => {
+  if (!selectedKey) return;
+
+  setSendingSearchKey(true);
+
+  try {
+    // Get scraped data
+    const res = await fetch(
+      'https://api-amava.up.railway.app/api/get_scraped_data',
+      {
+        method: 'GET',
+        headers: {
+          'ngrok-skip-browser-warning': 'true',
+        },
+      }
+    );
+
+    if (!res.ok) {
+      throw new Error('Failed to fetch scraped data');
+    }
+
+    const data = await res.json();
+
+    let unitList: any[] = [];
+
+    if (data.status === 'success') {
+      const parsed = JSON.parse(data.raw_string).data;
+
+      unitList = parsed
+        .map((i: any) => i[selectedKey])
+        .filter(Boolean);
+    } else {
+      throw new Error('Failed to load scraped data');
+    }
+
+    // Send selected search key and values to backend
+    const searchKeyResponse = await fetch(
+      'https://api-amava.up.railway.app/search-key',
+      {
+        method: 'POST',
+        headers: {
+          'ngrok-skip-browser-warning': 'true',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          search_key: selectedKey,
+          values: unitList,
+        }),
+      }
+    );
+
+    if (!searchKeyResponse.ok) {
+      throw new Error('Failed to send search key');
+    }
+
+    setShowSearchKeyModal(false);
+    setSelectedKey('');
+    setError('Search key sent! Checking on Amazon…');
+
+    // Start Amazon checking agent
+    await runAgentForAmazonCheck();
+  } catch (err) {
+    console.error('handleSendSearchKey error:', err);
+    setError('Failed to send search key.');
+  } finally {
+    setSendingSearchKey(false);
+  }
+};
+
+
+const runAgentForAmazonCheck = async () => {
+  setLoading(true);
+  setError(null);
+  setAgentResponse(null);
+
+  const userId = 'us';
+  const sessionId = 'st';
+  const appName = 'AMAVAGENT';
+
+  const promptText =
+    "Hello from Server scraping is done wholesaler's website now start checking on Amazon";
+
+  try {
+    // First attempt to run the agent
+    let response = await fetch(
+      'https://api-amava.up.railway.app/run',
+      {
+        method: 'POST',
+        headers: {
+          'ngrok-skip-browser-warning': 'true',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          appName,
+          userId,
+          sessionId,
+          newMessage: {
+            role: 'user',
+            parts: [
+              {
+                text: promptText,
+              },
+            ],
+          },
+        }),
+      }
+    );
+
+    // IMPORTANT:
+    // A Response body can only be read once.
+    // Therefore, read it once and store the text.
+    let responseText = await response.text();
+
+    // If the session does not exist, create it and retry.
+    if (responseText.includes('"detail":"Session not found"')) {
+      const sessionResponse = await fetch(
+        `https://api-amava.up.railway.app/apps/${appName}/users/${userId}/sessions/${sessionId}`,
+        {
+          method: 'POST',
+          headers: {
+            'ngrok-skip-browser-warning': 'true',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            state: {
+              key1: 'value1',
+              key2: 42,
+            },
+          }),
+        }
+      );
+
+      if (!sessionResponse.ok) {
+        const sessionErrorText = await sessionResponse.text();
+
+        throw new Error(
+          `Failed to create session: ${sessionResponse.status} ${sessionErrorText}`
+        );
+      }
+
+      // Retry /run after creating the session.
+      // This is a NEW Response object, so it is safe to read it.
+      response = await fetch(
+        'https://api-amava.up.railway.app/run',
+        {
+          method: 'POST',
+          headers: {
+            'ngrok-skip-browser-warning': 'true',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            appName,
+            userId,
+            sessionId,
+            newMessage: {
+              role: 'user',
+              parts: [
+                {
+                  text: promptText,
+                },
+              ],
+            },
+          }),
+        }
+      );
+
+      // Read the NEW response exactly once.
+      responseText = await response.text();
+    }
+
+    let main = 'No main response found.';
+
     try {
-      const response=await fetch('https://api-amava.up.railway.app/exceldata',{method:'GET',headers:{'ngrok-skip-browser-warning':'true','Content-Type':'application/json'}});
-      const data=await response.json(); const merged=data.merged_data; const rows:any[]=[];
-      merged.forEach((item:any)=>{
-        if(Array.isArray(item.amazon_data)&&item.amazon_data.length>0) item.amazon_data.forEach((ad:any)=>rows.push({...item,productASIN:ad.productASIN,status:ad.status}));
-        else rows.push({...item,productASIN:'',status:''});
-      });
-      rows.forEach(r=>delete r.amazon_data);
-      const ws=XLSX.utils.json_to_sheet(rows),wb=XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb,ws,'MergedData'); XLSX.writeFile(wb,'merged_data.xlsx');
-    } catch { setError('Failed to download Excel.'); }
-    finally { setDownloading(false); }
+      const json = JSON.parse(responseText);
+      main = extractMainResponse(json);
+    } catch {
+      // If the response isn't JSON, use the raw text.
+      main = responseText;
+    }
+
+    setAgentResponse(main);
+
+    setError(
+      'Started checking on Amazon. We will notify you after its done!'
+    );
+  } catch (err) {
+    console.error('runAgentForAmazonCheck error:', err);
+
+    setError(
+      `Failed to contact agent. ${
+        err instanceof Error ? err.message : String(err)
+      }`
+    );
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+useEffect(() => {
+  const fetchCheckedData = async () => {
+    setLoading(true);
+    setError(null);
+    setCheckedData(null);
+    setAgentResponse(null);
+
+    try {
+      const response = await fetch(
+        'https://api-amava.up.railway.app/check-ungated',
+        {
+          method: 'GET',
+          headers: {
+            'ngrok-skip-browser-warning': 'true',
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch checked data');
+      }
+
+      const data = await response.json();
+
+      if (
+        !data.checked_data?.results ||
+        Object.keys(data.checked_data.results).length === 0
+      ) {
+        await runAgentForAmazonCheck();
+      } else {
+        setCheckedData(data.checked_data);
+      }
+    } catch (err) {
+      console.error('fetchCheckedData error:', err);
+
+      await runAgentForAmazonCheck();
+    } finally {
+      setLoading(false);
+    }
   };
+
+  // Initial check
+  fetchCheckedData();
+
+  // Check every 10 minutes
+  const interval = setInterval(fetchCheckedData, 600000);
+
+  return () => clearInterval(interval);
+}, []);
+
+
+const handleDownload = async () => {
+  setDownloading(true);
+
+  try {
+    const response = await fetch(
+      'https://api-amava.up.railway.app/exceldata',
+      {
+        method: 'GET',
+        headers: {
+          'ngrok-skip-browser-warning': 'true',
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch Excel data');
+    }
+
+    const data = await response.json();
+
+    const merged = data.merged_data;
+    const rows: any[] = [];
+
+    merged.forEach((item: any) => {
+      if (
+        Array.isArray(item.amazon_data) &&
+        item.amazon_data.length > 0
+      ) {
+        item.amazon_data.forEach((ad: any) => {
+          rows.push({
+            ...item,
+            productASIN: ad.productASIN,
+            status: ad.status,
+          });
+        });
+      } else {
+        rows.push({
+          ...item,
+          productASIN: '',
+          status: '',
+        });
+      }
+    });
+
+    rows.forEach((r) => delete r.amazon_data);
+
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(wb, ws, 'MergedData');
+
+    XLSX.writeFile(wb, 'merged_data.xlsx');
+  } catch (err) {
+    console.error('handleDownload error:', err);
+    setError('Failed to download Excel.');
+  } finally {
+    setDownloading(false);
+  }
+};
 
   const flatProducts = checkedData ? Object.entries(checkedData.results).flatMap(([k,ps])=>ps.map(p=>({Search_key:k,product:p}))) : [];
   const inputStyle: React.CSSProperties = { width:'100%',height:44,padding:'0 14px',borderRadius:10,background:'var(--surface-inset)',border:'1px solid var(--border-subtle)',color:'var(--text-primary)',fontFamily:'var(--font-body)',fontSize:14,outline:'none',boxSizing:'border-box' as const };
